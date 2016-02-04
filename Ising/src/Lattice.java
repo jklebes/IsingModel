@@ -1,6 +1,5 @@
 import java.util.Random;
 
-
 public class Lattice {
 private static final double k = 1;
 private static final double J = 1;
@@ -10,8 +9,9 @@ private int height;
 private double T;
 private double threshold = 400;
 private Random random = new Random();
+private Stats stats=new Stats();
 /**
- * constructor initiates with false / down
+ * constructor initiates with random
  */
 public Lattice(int width, int height, double T){
 	this.width = width;
@@ -21,7 +21,7 @@ public Lattice(int width, int height, double T){
 	fillRandom();
 }
 
-private void fillRandom(){
+void fillRandom(){
 	for (int i=0; i < height; i++){
 		for (int j=0; j < width; j++){
 			if (random.nextDouble() < .5){
@@ -192,7 +192,7 @@ private void exchange(int i1, int j1, int i2, int j2) {
 }
 
 private double totalEnergy(){
-	double neighborsum = 0;
+	double neighborsum=0;
 	for (int i=0; i < height; i++){
 		for (int j=0; j < width; j++){
 			neighborsum += upmultiple(i,j);
@@ -227,21 +227,24 @@ public int getheight() {
 	return height;
 }
 
-public double[] glauberMagnetisation(int stepnumber, double T){
+public double[] glauberMagnetisation(int stepnumber, double T, IsingFrame f){
 	this.T=T;
-	double avgM = 0;
-	double avgMsquared=0;
-	for (int t = 0; t < 100 ; t++){
-		this.fasterSampleGlauber();}
+	double[] Ms = new double[stepnumber];
+	double[] Msquareds= new double[stepnumber];
 for (int t = 0; t < stepnumber ; t++){
 	this.fasterSampleGlauber();
-	avgM += getTotalM();
-	avgMsquared+= getTotalM()*getTotalM();
+	f.step();
+	Ms[t] = getTotalM();
+	Msquareds[t]= getTotalM()*getTotalM();
 	}
-avgM = avgM / (double)stepnumber;
-avgMsquared = avgMsquared / (double)stepnumber;
-double susceptibility = (avgMsquared- (avgM* avgM)) / (width * height * k * this.T );
-double[] results = new double[]{avgM,susceptibility};
+double avgM = stats.avg(Ms);
+double avgMsquared = stats.avg(Msquareds);
+double t;
+if (this.T==0){t =.0000000000000000000000000000000000001;}
+else{t = this.T;}
+double susceptibility = (avgMsquared- (avgM* avgM)) / (width * height * k * t );
+double Merror = stats.sterror(Ms);
+double[] results = new double[]{avgM,susceptibility, Merror};
 return results;
 }
 
