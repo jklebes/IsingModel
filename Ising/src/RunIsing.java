@@ -9,8 +9,8 @@ class RunIsing{
 static double Tfrom = 0;
 static double Tto= 10;
 static double Tinterval = .5;
-static int equilsteps =200;
-static int runsteps= 50000;
+static int equilsteps =500;
+static int runsteps= 100000;
 static int repeats = 20;
 static int width = 50;
 static int height = 50;
@@ -30,7 +30,7 @@ public static void main(String[] args) throws IOException{
 	FileWriter fw = new FileWriter(file.getAbsoluteFile());
 	BufferedWriter bw = new BufferedWriter(fw);
 	String line1 = "# run for "+ equilsteps+ " equilsteps, "+ runsteps+" steps, averages of "+ repeats + "repeats";
-	String line1b= "#T M S [sterror in M(t), avg over repeats] [sterror in S over repeats]";
+	String line1b= "#T M S [sterror in M over repeats] [sterror in S over repeats] [sterror in M(t), avg over repeats] ";
 	bw.write(line1);
 	bw.newLine();
 	bw.write(line1b);
@@ -57,9 +57,10 @@ public static void main(String[] args) throws IOException{
 		double Mavg = stats.avg(Ms);
 		double Savg = stats.avg(Ss);
 		double Savgerror = stats.sterror(Ss);
-		double Mavgerror = stats.avg(Merrors);
+		double Mavgerror = stats.sterror(Ms);
+		double Merroravg = stats.avg(Merrors);
 			bw.newLine();
-			line = T + " " + Mavg + " " + Savg + " "+Mavgerror+" " + Savgerror;
+			line = T + " " + Mavg + " " + Savg + " "+Mavgerror+" " + Savgerror+" " + Merroravg;
 			bw.write(line);
 		
 	}

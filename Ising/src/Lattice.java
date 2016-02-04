@@ -239,12 +239,9 @@ for (int t = 0; t < stepnumber ; t++){
 	}
 double avgM = stats.avg(Ms);
 double avgMsquared = stats.avg(Msquareds);
-double t;
-if (this.T==0){t =.0000000000000000000000000000000000001;}
-else{t = this.T;}
-double susceptibility = (avgMsquared- (avgM* avgM)) / (width * height * k * t );
+double susceptibility = (avgMsquared- (avgM* avgM)) / (width * height * k * this.T );
 double Merror = stats.sterror(Ms);
-double[] results = new double[]{avgM,susceptibility, Merror};
+double[] results = new double[]{Math.abs(avgM),susceptibility, Merror};
 return results;
 }
 
