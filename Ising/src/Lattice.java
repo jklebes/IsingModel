@@ -269,4 +269,22 @@ public double getTotalM() {
 	return Msum;
 }
 
+public double[] kawasakiMagnetisation(int stepnumber, double T, IsingFrame f) {
+	this.T=T;
+	double[] Es = new double[stepnumber];
+	double[] Esquareds= new double[stepnumber];
+for (int t = 0; t < stepnumber ; t++){
+	this.fasterSampleKawasaki();
+	f.step();
+	Es[t] = totalEnergy();
+	Esquareds[t]= totalEnergy()*totalEnergy();
+	}
+double avgE = stats.avg(Es);
+double avgEsquared = stats.avg(Esquareds);
+double capacity = (avgEsquared- (avgE* avgE)) / ( k * this.T *this.T );
+double Eerror = stats.sterror(Es);
+double[] results = new double[]{avgE,capacity, Eerror};
+return results;
+}
+
 }
