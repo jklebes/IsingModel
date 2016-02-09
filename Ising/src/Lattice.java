@@ -63,6 +63,7 @@ private boolean checkSpin(int spin){
 	else {return false;}
 }
 public void sampleGlauber(){
+	for (int i = 0; i< height * width; i++){
 	int randomi=random.nextInt(height);
 	int randomj=random.nextInt(width);
 	double Ebefore=totalEnergy();
@@ -81,9 +82,11 @@ public void sampleGlauber(){
 			flip(randomi, randomj);
 		}
 	}
+	}
 }
 
 public void fasterSampleGlauber(){
+	for (int i = 0; i< height * width; i++){
 	int randomi=random.nextInt(height);
 	int randomj=random.nextInt(width);
 	double difference = glauberDifference(randomi, randomj);;
@@ -97,6 +100,7 @@ public void fasterSampleGlauber(){
 		if (random.nextDouble() < Pthreshold){
 			flip(randomi, randomj);
 		}
+	}
 	}
 }
 
@@ -113,6 +117,7 @@ private void flip(int i, int j) {
 }
 
 public void sampleKawasaki(){
+	for (int i = 0; i< height * width; i++){
 int randomi1=random.nextInt(height);
 int randomj1=random.nextInt(width);
 int randomi2=random.nextInt(height);
@@ -132,37 +137,39 @@ if (difference < 0 ){
 		exchange(randomi1,randomj1, randomi2, randomj2);
 	}
 }
+	}
 }
 
 public void fasterSampleKawasaki(){
-	int randomi1=random.nextInt(height);
-	int randomj1=random.nextInt(width);
-	int randomi2=random.nextInt(height);
-	int randomj2=random.nextInt(width);
-	double difference;
-	if (getSpin(randomi1,randomj1)!=getSpin(randomi2,randomj2)){
-		if(!checkNeighbors(randomi1, randomj1, randomi2, randomj2)){
-		difference = glauberDifference(randomi1, randomj1)+ glauberDifference(randomi2,randomi2);
+	for (int i = 0; i< height * width; i++){
+		int randomi1=random.nextInt(height);
+		int randomj1=random.nextInt(width);
+		int randomi2=random.nextInt(height);
+		int randomj2=random.nextInt(width);
+		double difference;
+		if (getSpin(randomi1,randomj1)!=getSpin(randomi2,randomj2)){
+			if(!checkNeighbors(randomi1, randomj1, randomi2, randomj2)){
+				difference = glauberDifference(randomi1, randomj1)+ glauberDifference(randomi2,randomi2);
+			}
+			else{
+				//??? -1? -2?
+				difference = glauberDifference(randomi1, randomj1)+ glauberDifference(randomi2,randomi2)-4;
+			}
 		}
 		else{
-			//??? -1? -2?
-		difference = glauberDifference(randomi1, randomj1)+ glauberDifference(randomi2,randomi2)-4;
+			difference = 0;
 		}
-	}
-	else{
-		difference = 0;
-	}
 
-	if (difference > 0 ){
-		exchange(randomi1, randomj1, randomi2, randomj2);
-	}
-	else{
-		double Pthreshold = Math.exp(difference / (k*T));
-		if (random.nextDouble() < Pthreshold){
+		if (difference > 0 ){
 			exchange(randomi1, randomj1, randomi2, randomj2);
 		}
+		else{
+			double Pthreshold = Math.exp(difference / (k*T));
+			if (random.nextDouble() < Pthreshold){
+				exchange(randomi1, randomj1, randomi2, randomj2);
+			}
+		}
 	}
-
 }
 
 private boolean checkNeighbors(int i1, int j1, int i2,
@@ -227,36 +234,32 @@ public int getheight() {
 	return height;
 }
 
-public double[] glauberMagnetisation(int stepnumber, double T, IsingFrame f){
+public double[] bothStats(int type, int stepnumber, double T, IsingFrame f){
 	this.T=T;
 	double[] Ms = new double[stepnumber];
 	double[] Msquareds= new double[stepnumber];
+	double[] Es = new double[stepnumber];
+	double[] Esquareds= new double[stepnumber];
 for (int t = 0; t < stepnumber ; t++){
-	this.fasterSampleGlauber();
+	if (type == 1){
+	this.fasterSampleGlauber();}
+	else{this.fasterSampleKawasaki();}
 	f.step();
 	Ms[t] = getTotalM();
 	Msquareds[t]= getTotalM()*getTotalM();
+	Es[t] = totalEnergy();
+	Esquareds[t]= totalEnergy()*totalEnergy();
 	}
 double avgM = stats.avg(Ms);
 double avgMsquared = stats.avg(Msquareds);
 double susceptibility = (avgMsquared- (avgM* avgM)) / (width * height * k * this.T );
 double Merror = stats.sterror(Ms);
-double[] results = new double[]{Math.abs(avgM),susceptibility, Merror};
+double avgE = stats.avg(Es);
+double avgEsquared = stats.avg(Esquareds);
+double capacity = (avgEsquared- (avgE* avgE)) / ( k * this.T *this.T );
+double Eerror = stats.sterror(Es);
+double[] results = new double[]{Math.abs(avgM),susceptibility, Merror, avgE, capacity, Eerror};
 return results;
-}
-
-private void reachEquilibrium() {
-	int unchangedCount = 0;
-	double lastM = 0;
-	while (unchangedCount < 3){
-		for (int i = 0; i<100; i++){
-		this.fasterSampleGlauber();}
-		double thisM = getTotalM();
-		System.out.println("M = "+ thisM);
-		if (Math.abs(lastM-thisM)< threshold)  {unchangedCount+=1;}
-		else{unchangedCount = 0;}
-		lastM = thisM;
-		}
 }
 
 public double getTotalM() {
@@ -269,22 +272,5 @@ public double getTotalM() {
 	return Msum;
 }
 
-public double[] kawasakiMagnetisation(int stepnumber, double T, IsingFrame f) {
-	this.T=T;
-	double[] Es = new double[stepnumber];
-	double[] Esquareds= new double[stepnumber];
-for (int t = 0; t < stepnumber ; t++){
-	this.fasterSampleKawasaki();
-	f.step();
-	Es[t] = totalEnergy();
-	Esquareds[t]= totalEnergy()*totalEnergy();
-	}
-double avgE = stats.avg(Es);
-double avgEsquared = stats.avg(Esquareds);
-double capacity = (avgEsquared- (avgE* avgE)) / ( k * this.T *this.T );
-double Eerror = stats.sterror(Es);
-double[] results = new double[]{avgE,capacity, Eerror};
-return results;
-}
 
 }
