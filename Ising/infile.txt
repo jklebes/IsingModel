@@ -1,0 +1,6 @@
+type 1
+Tto 4
+Tinterval .2
+equilsteps 200
+runsteps 10000
+repeats 1

@@ -88,7 +88,7 @@ public static void runEither(Lattice lattice, IsingFrame f, int type, int equils
 		, double Tfrom, double Tto, double Tinterval) throws IOException{
 	File file;
 	if (type == 1){
-		file = new File("glaubertemps.txt");
+		file = new File("glaubertempslong.txt");
 	}
 	else{
 		file = new File("kawasakitemps.txt");
@@ -127,7 +127,7 @@ public static void runEither(Lattice lattice, IsingFrame f, int type, int equils
 			lattice.fillRandom();
 			
 			
-			f.setTitle("T = "+T+", run "+n+"/"+repeats+ ", equilibrating");
+			f.setTitle("T = "+T+", run "+(n+1)+"/"+repeats+ ", equilibrating");
 			if (type == 1){
 				for (int j = 0; j < equilsteps; j++){
 					lattice.fasterSampleGlauber();
